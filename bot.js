@@ -50,13 +50,22 @@ bot
       console.log('from:', ctx.from.first_name, ctx.from.last_name, '(@' + ctx.from.username + ')', 'ID:', ctx.from.id); }
     console.log("Message:", ctx.msg.text);
     // Logic
+    let name = (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') );
+    const statusMessage = await ctx.reply ("Searching for " + name );
     let query = (await wikifeet.search(ctx.msg.text))[0];
     if (query === null) { return console.log("Query:", ctx.msg.text, "not found!"); }
     else {
         let pics = await wikifeet.getImages(query);
-        let random = 0 | (pics.length * Math.random());
-        await ctx.replyWithPhoto (pics[random], { caption: (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + " (" + pics + " pics found)") } ); }
-      });
+        //let random = 0 | (pics.length * Math.random());
+        var index = [];
+        for (let i = 0; i < 5; i++) {
+          let random = 0 | (pics.length * Math.random());
+          index.push(random); }
+        for (let i = 0; i < index.length; i++) {
+          await ctx.replyWithPhoto(pics[index[i]]); }
+          setTimeout(async () => {
+            await ctx.api.deleteMessage(ctx.chat.id, statusMessage.message_id).catch( () => {} ); }, 5000);
+      }});
 
 // Error Handling
 
