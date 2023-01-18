@@ -55,7 +55,7 @@ bot
     else {
         let pics = await wikifeet.getImages(query);
         let random = 0 | (pics.length * Math.random());
-        await ctx.replyWithPhoto (pics[random], { caption: (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')) } ); }
+        await ctx.replyWithPhoto (pics[random], { caption: (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + " (" + pics + " pics found)") } ); }
       });
 
 // Error Handling
