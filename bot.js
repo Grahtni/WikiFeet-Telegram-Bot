@@ -37,7 +37,7 @@ bot.command("start", (ctx) => {
     console.log("New user added:");
     console.log(ctx.from);
     });
-bot.command("help", (ctx) => ctx.reply("*@anzubo Project.*\n\nThis bot uses the WikiFeet website. You are required to follow WikiFeet's TOS.\n\nWith usage of the bot service you take full responsibility of content downloaded. You will not download anything of an illegal and/or adult nature.\n\nUsage of the bot implies you accept and are bound by these terms."), { parse_mode: "Markdown" });
+bot.command("help", (ctx) => ctx.reply("*@anzubo Project.*\n\nThis bot uses the WikiFeet website. You are required to follow WikiFeet's TOS.\n\nWith usage of the bot service you take full responsibility of content downloaded. You will not download anything of an illegal and/or adult nature.", { parse_mode: "Markdown" } ));
 
 // Messages
 
@@ -55,7 +55,7 @@ bot
     else {
         let pics = await wikifeet.getImages(query);
         let random = 0 | (pics.length * Math.random());
-        await ctx.replyWithPhoto (pics[random], { caption: (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')), reply_to_message_id: ctx.msg.message_id }); }
+        await ctx.replyWithPhoto (pics[random], { caption: (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')) } ); }
       });
 
 // Error Handling
