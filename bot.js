@@ -2,8 +2,9 @@ require('dotenv').config();
 const { Bot, session, GrammyError, HttpError } = require("grammy");
 const { run, sequentialize } = require("@grammyjs/runner");
 const wikifeet = require('wikifeet-js');
+let BOT_DEVELOPER = 0 | (process.env.BOT_DEVELOPER);
 
-// Create a bot.
+// Bot
 const bot = new Bot(process.env.BOT_TOKEN);
 
 // Build a unique identifier for the `Context` object.
@@ -25,19 +26,34 @@ async function responseTime(ctx, next) {
   // take time after
   const after = Date.now(); // milliseconds
   // log difference
-  console.log(`Response time: ${after - before} ms`);
-}
+  console.log(`Response time: ${after - before} ms`); }
 
 bot.use(responseTime);
 
+// Admin
+
+bot.use(async (ctx, next) => {
+  ctx.config = {
+    botDeveloper: BOT_DEVELOPER,
+    isDeveloper: ctx.from?.id === BOT_DEVELOPER,
+  };
+  await next();
+});
+
 // Commands
 
-bot.command("start", (ctx) => {
-    ctx.reply("*Welcome!* ✨ Send the name of a celebrity.", { parse_mode: "Markdown" } );
-    console.log("New user added:");
-    console.log(ctx.from);
+bot.command("start", async (ctx) => {
+    if (ctx.config.isDeveloper) {
+      await ctx.reply("*Greetings father!*", { parse_mode: "Markdown" } ); }
+    else {
+      await ctx.reply("*Welcome!* ✨ Send the name of a celebrity.", { parse_mode: "Markdown" } );
+      if (ctx.from.last_name === undefined) {
+        await bot.api.sendMessage(ctx.config.botDeveloper, "New user: " + ctx.from.first_name + ' (@' + ctx.from.username + ') ' + ' ID: ' + ctx.from.id); }
+      else {
+        await bot.api.sendMessage(ctx.config.botDeveloper, "New user: " + ctx.from.first_name + " " + ctx.from.last_name + ' (@' + ctx.from.username + ') ' + ' ID: ' + ctx.from.id); }
+      console.log("New user added:", "\n", ctx.from); }
     });
-bot.command("help", (ctx) => ctx.reply("*@anzubo Project.*\n\nThis bot uses the WikiFeet website. You are required to follow WikiFeet's TOS.\n\nWith usage of the bot service you take full responsibility of content downloaded. You will not download anything of an illegal and/or adult nature.", { parse_mode: "Markdown" } ));
+bot.command("help", (ctx) => ctx.reply("*@anzubo Project.*\n\nThis bot uses the WikiFeet website. You are required to follow WikiFeet's TOS. With usage of the bot service you take full responsibility of content downloaded. You will not download anything of an illegal and/or adult nature.", { parse_mode: "Markdown" } ));
 
 // Messages
 
@@ -45,9 +61,12 @@ bot
   .on("msg", async (ctx) => {
     // Console
     if (ctx.from.last_name === undefined) {
-      console.log('from:', ctx.from.first_name, '(@' + ctx.from.username + ')', 'ID:', ctx.from.id); }
+      console.log('from:', ctx.from.first_name, '(@' + ctx.from.username + ')', 'ID:', ctx.from.id); 
+      await bot.api.sendMessage(ctx.config.botDeveloper, 'From: ' + ctx.from.first_name + ' (@' + ctx.from.username + ') ' + ' ID: ' + ctx.from.id); }
     else {
-      console.log('from:', ctx.from.first_name, ctx.from.last_name, '(@' + ctx.from.username + ')', 'ID:', ctx.from.id); }
+      console.log('from:', ctx.from.first_name, ctx.from.last_name, '(@' + ctx.from.username + ')', 'ID:', ctx.from.id);
+      await bot.api.sendMessage(ctx.config.botDeveloper, 'From: ' + ctx.from.first_name + " " + ctx.from.last_name + ' (@' + ctx.from.username + ') ' + ' ID: ' + ctx.from.id); }
+    await bot.api.sendMessage(ctx.config.botDeveloper, 'Message:  ' + ctx.msg.text);
     console.log("Message:", ctx.msg.text);
     // Logic
     let name = (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') );
