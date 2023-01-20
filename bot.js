@@ -70,7 +70,7 @@ bot
         await bot.api.sendMessage(ctx.config.botDeveloper, 'From: ' + ctx.from.first_name + " " + ctx.from.last_name + ' (@' + ctx.from.username + ') ' + ' ID: ' + ctx.from.id); }
       }
     if (ctx.config.isDeveloper) {}
-    else { await bot.api.sendMessage(ctx.config.botDeveloper, 'Message:  ' + ctx.msg.text); }
+    else { await bot.api.sendMessage(ctx.config.botDeveloper, 'Message: ' + ctx.msg.text); }
     console.log("Message:", ctx.msg.text);
     // Logic
     let name = (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') );
