@@ -42,8 +42,9 @@ bot.on("msg", async (ctx) => {
 
   // Logic
     
+  try {
     let name = (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') );
-    const statusMessage = await ctx.reply ("Searching for " + name );
+    await ctx.reply ("Searching for " + name );
     let query = (await wikifeet.search(ctx.msg.text))[0];
     if (query === null) { return console.log("Query:", ctx.msg.text, "not found!"); }    
     let pics = await wikifeet.getImages(query);
@@ -52,10 +53,14 @@ bot.on("msg", async (ctx) => {
       let random = 0 | (pics.length * Math.random());
       index.push(random); }
       for (let i = 0; i < index.length; i++) {
-        await ctx.replyWithPhoto(pics[index[i]]); }
-    setTimeout( async () => {
-      await ctx.api.deleteMessage(ctx.chat.id, statusMessage.message_id).catch( () => {} ); }, 5000);
-      
+        await ctx.replyWithPhoto(pics[index[i]]); 
+    }
+  } catch (error) {
+    await ctx.reply ("Query: " + ctx.msg.text + " not found!");
+    console.error(error);
+    return;
+  }  
+
   });
 
   // Function
