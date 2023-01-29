@@ -59,7 +59,7 @@ bot.on("msg", async (ctx) => {
     await ctx.reply ("Query: " + ctx.msg.text + " not found!");
     console.error(error);
     return;
-  }  
+  }
 
   });
 
