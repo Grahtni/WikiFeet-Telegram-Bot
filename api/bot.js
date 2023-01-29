@@ -25,7 +25,7 @@ bot.command("start", async (ctx) => {
     .catch((error) => console.error(error));
   });
 bot.command("help", async (ctx) => {
-  await ctx.reply("*@anzubo Project.*\n\nThis bot uses the WikiFeet website. You are required to follow WikiFeet's TOS.\nWith usage of the bot service you take full responsibility of content downloaded.\n_You will not download anything of an illegal and/or adult nature._", { parse_mode: "Markdown" } )
+  await ctx.reply("*@anzubo Project.*\n\nThis bot uses the WikiFeet website.\n_You are required to follow WikiFeet's TOS._", { parse_mode: "Markdown" } )
     .catch((error) => console.error(error));
   });
 
