@@ -26,6 +26,7 @@ bot.command("start", async (ctx) => {
   });
 bot.command("help", async (ctx) => {
   await ctx.reply("*@anzubo Project.*\n\nThis bot uses the WikiFeet website.\n_You are required to follow WikiFeet's TOS._", { parse_mode: "Markdown" } )
+    .then(() => console.log("Help command message sent."))
     .catch((error) => console.error(error));
   });
 
@@ -46,15 +47,25 @@ bot.on("msg", async (ctx) => {
     let name = (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') );
     await ctx.reply ("Searching for " + name );
     let query = (await wikifeet.search(ctx.msg.text))[0];
+
     if (query === null) { return console.log("Query:", ctx.msg.text, "not found!"); }    
     let pics = await wikifeet.getImages(query);
+
     var index = [];
     for (let i = 0; i < 5; i++) {
-      let random = 0 | (pics.length * Math.random());
-      index.push(random); }
-      for (let i = 0; i < index.length; i++) {
-        await ctx.replyWithPhoto(pics[index[i]]); 
-    }
+
+      if (i > pics.length) {
+        console.error("Not enough pics for:", name);
+        return; }
+
+      else {
+
+        let random = 0 | (pics.length * Math.random());
+        index.push(random); }
+
+        for (let i = 0; i < index.length; i++) {
+          await ctx.replyWithPhoto(pics[index[i]]); } }
+
   } catch (error) {
     await ctx.reply ("Query: " + ctx.msg.text + " not found!");
     console.error(error);
