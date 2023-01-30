@@ -1,6 +1,6 @@
-require('dotenv').config();
+require("dotenv").config();
 const { Bot, webhookCallback } = require("grammy");
-const wikifeet = require('wikifeet-js');
+const wikifeet = require("wikifeet-js");
 
 // Bot
 
@@ -20,60 +20,85 @@ bot.use(responseTime);
 // Commands
 
 bot.command("start", async (ctx) => {
-  await ctx.reply("*Welcome!* ✨ Send the name of a celebrity.", { parse_mode: "Markdown" })
+  await ctx
+    .reply("*Welcome!* ✨ Send the name of a celebrity.", {
+      parse_mode: "Markdown",
+    })
     .then(() => console.log("New user added:", ctx.from))
     .catch((error) => console.error(error));
-  });
+});
+
 bot.command("help", async (ctx) => {
-  await ctx.reply("*@anzubo Project.*\n\nThis bot uses the WikiFeet website.\n_You are required to follow WikiFeet's TOS._", { parse_mode: "Markdown" } )
+  await ctx
+    .reply(
+      "*@anzubo Project.*\n\nThis bot uses the WikiFeet website.\n_You are required to follow WikiFeet's TOS._",
+      { parse_mode: "Markdown" }
+    )
     .then(() => console.log("Help command message sent."))
     .catch((error) => console.error(error));
-  });
+});
 
 // Messages
 
 bot.on("msg", async (ctx) => {
-
   // Logging
 
   if (ctx.from.last_name === undefined) {
-    console.log('From:', ctx.from.first_name, '(@' + ctx.from.username + ')', 'ID:', ctx.from.id); }
-  else { console.log('From:', ctx.from.first_name, ctx.from.last_name, '(@' + ctx.from.username + ')', 'ID:', ctx.from.id); }
+    console.log(
+      "From:",
+      ctx.from.first_name,
+      "(@" + ctx.from.username + ")",
+      "ID:",
+      ctx.from.id
+    );
+  } else {
+    console.log(
+      "From:",
+      ctx.from.first_name,
+      ctx.from.last_name,
+      "(@" + ctx.from.username + ")",
+      "ID:",
+      ctx.from.id
+    );
+  }
   console.log("Message:", ctx.msg.text);
 
   // Logic
-    
+
   try {
-    let name = (ctx.msg.text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') );
-    await ctx.reply ("Searching for " + name );
+    let name = ctx.msg.text
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    await ctx.reply("Searching for " + name);
     let query = (await wikifeet.search(ctx.msg.text))[0];
 
-    if (query === null) { return console.log("Query:", ctx.msg.text, "not found!"); }    
+    if (query === null) {
+      return console.log("Query:", ctx.msg.text, "not found!");
+    }
     let pics = await wikifeet.getImages(query);
 
     var index = [];
     for (let i = 0; i < 5; i++) {
-
       if (i > pics.length) {
         console.error("Not enough pics for:", name);
-        return; }
-
-      else {
-
+        return;
+      } else {
         let random = 0 | (pics.length * Math.random());
-        index.push(random); }
+        index.push(random);
+      }
 
-        for (let i = 0; i < index.length; i++) {
-          await ctx.replyWithPhoto(pics[index[i]]); } }
-
+      for (let i = 0; i < index.length; i++) {
+        await ctx.replyWithPhoto(pics[index[i]]);
+      }
+    }
   } catch (error) {
-    await ctx.reply ("Query: " + ctx.msg.text + " not found!");
+    await ctx.reply("Query: " + ctx.msg.text + " not found!");
     console.error(error);
     return;
   }
+});
 
-  });
+// Function
 
-  // Function
-
-export default webhookCallback(bot, 'http');
+export default webhookCallback(bot, "http");
