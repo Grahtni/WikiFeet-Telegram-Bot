@@ -6,6 +6,11 @@ const wikifeet = require("wikifeet-js");
 
 const bot = new Bot(process.env.BOT_TOKEN);
 
+// DB
+
+const mysql = require("mysql2");
+const connection = mysql.createConnection(process.env.DATABASE_URL);
+
 // Response
 
 async function responseTime(ctx, next) {
@@ -24,7 +29,37 @@ bot.command("start", async (ctx) => {
     .reply("*Welcome!* ✨ Send the name of a celebrity.", {
       parse_mode: "Markdown",
     })
-    .then(() => console.log("New user added:", ctx.from))
+    .then(() => {
+      connection.query(
+        `
+SELECT * FROM users WHERE userid = ?
+`,
+        [ctx.from.id],
+        (error, results) => {
+          if (error) throw error;
+          if (results.length === 0) {
+            connection.query(
+              `
+    INSERT INTO users (userid, username, firstName, lastName, firstSeen)
+    VALUES (?, ?, ?, ?, NOW())
+  `,
+              [
+                ctx.from.id,
+                ctx.from.username,
+                ctx.from.first_name,
+                ctx.from.last_name,
+              ],
+              (error, results) => {
+                if (error) throw error;
+                console.log("New user added:", ctx.from);
+              }
+            );
+          } else {
+            console.log("User exists in database.", ctx.from.id);
+          }
+        }
+      );
+    })
     .catch((error) => console.error(error));
 });
 
@@ -71,19 +106,22 @@ bot.on("msg", async (ctx) => {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
     await ctx.reply("Searching for " + name);
-    let query = (await wikifeet.search(ctx.msg.text))[0];
 
-    if (query === null) {
-      return console.log("Query:", ctx.msg.text, "not found!");
-    }
-    let pics = await wikifeet.getImages(query);
+    let searchResults = await wikifeet.search(ctx.msg.text);
+    if (searchResults.length === 0) {
+      console.log("No results found for:", ctx.msg.text);
+      await ctx.reply("No results found for " + name);
+      return;
+    } else {
+      let query = searchResults[0];
+      let pics = await wikifeet.getImages(query);
 
-    var index = [];
-    for (let i = 0; i < 5; i++) {
-      if (i > pics.length) {
-        console.error("Not enough pics for:", name);
-        return;
-      } else {
+      var index = [];
+      for (let i = 0; i < 3; i++) {
+        if (i >= pics.length) {
+          console.error("Not enough pics for:", name);
+          return;
+        }
         let random = 0 | (pics.length * Math.random());
         index.push(random);
       }
