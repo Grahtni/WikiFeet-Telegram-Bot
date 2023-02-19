@@ -55,7 +55,7 @@ SELECT * FROM users WHERE userid = ?
               }
             );
           } else {
-            console.log("User exists in database.", ctx.from.id);
+            console.log("User exists in database.", ctx.from);
           }
         }
       );
@@ -106,7 +106,6 @@ bot.on("msg", async (ctx) => {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
     await ctx.reply("Searching for " + name);
-
     let searchResults = await wikifeet.search(ctx.msg.text);
     if (searchResults.length === 0) {
       console.log("No results found for:", ctx.msg.text);
