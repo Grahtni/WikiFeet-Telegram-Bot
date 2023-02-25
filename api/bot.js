@@ -89,42 +89,51 @@ bot.on("msg", async (ctx) => {
 
   // Logic
 
-  let formattedName = ctx.msg.text
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-
-  async function search() {
-    const statusMessage = await ctx.reply(`*Searching for ${formattedName}*`, {
-      parse_mode: "Markdown",
-    });
-
+  async function searchAndSendImages(ctx, name) {
     try {
-      const searchResults = await searchWikifeet(formattedName);
-      console.log(`${searchResults.length} pics found for ${formattedName}`);
-      await sendMarkdownMessage(
-        ctx,
-        `*${searchResults.length} pics found for ${formattedName}*`
+      const formattedName = name
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+
+      const statusMessage = await ctx.reply(
+        `*Searching for ${formattedName}*`,
+        {
+          parse_mode: "Markdown",
+        }
       );
-      return searchResults;
+
+      const searchResults = await wikifeet.search(formattedName);
+
+      await bot.api.deleteMessage(ctx.from.id, statusMessage.message_id);
+
+      if (searchResults.length === 0) {
+        console.log(`No results found for ${formattedName}`);
+        await sendMarkdownMessage(
+          ctx,
+          `*No results found for ${formattedName}*`
+        );
+        return;
+      } else {
+        let query = searchResults[0];
+        let pics = await wikifeet.getImages(query);
+        let randomIndices = Array.from(
+          { length: 3 },
+          () => 0 | (pics.length * Math.random())
+        );
+
+        let promises = randomIndices.map((index) =>
+          ctx.replyWithPhoto(pics[index])
+        );
+        await Promise.all(promises);
+        console.log("Pics sent");
+      }
     } catch (error) {
       console.error(error);
       await sendMarkdownMessage(
         ctx,
         `*Error while searching Wikifeet for ${formattedName}*`
       );
-      return [];
-    } finally {
-      await bot.api.deleteMessage(ctx.from.id, statusMessage.message_id);
-    }
-  }
-
-  async function searchWikifeet(name) {
-    try {
-      const searchResults = await wikifeet.search(name);
-      return searchResults;
-    } catch (error) {
-      console.error(error);
       throw error;
     }
   }
@@ -135,34 +144,7 @@ bot.on("msg", async (ctx) => {
     });
   }
 
-  let results = await search();
-
-  if (results.length === 0) {
-    console.log(`No results found for ${formattedName}`);
-    await sendMarkdownMessage(ctx, `*No results found for ${formattedName}*`);
-    return;
-  } else if (results.length <= 3) {
-    console.error(`Not enough pics for ${formattedName}`);
-    await sendMarkdownMessage(ctx, `*Not enough pics for ${formattedName}*`);
-    return;
-  } else {
-    let query = results[0];
-    let pics = await wikifeet.getImages(query);
-    let randomIndices = Array.from(
-      { length: 3 },
-      () => 0 | (pics.length * Math.random())
-    );
-    try {
-      let promises = randomIndices.map((index) =>
-        ctx.replyWithPhoto(pics[index])
-      );
-      await Promise.all(promises);
-      console.log("Pics sent");
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
+  await searchAndSendImages(ctx, ctx.msg.text);
 });
 
 // Error
