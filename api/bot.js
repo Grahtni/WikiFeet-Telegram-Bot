@@ -89,46 +89,40 @@ bot.on("msg", async (ctx) => {
 
   // Logic
 
-  async function searchAndSendImages(ctx, name) {
-    try {
-      const formattedName = name
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
+  const formattedName = ctx.msg.text
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
-      const statusMessage = await ctx.reply(
-        `*Searching for ${formattedName}*`,
-        {
-          parse_mode: "Markdown",
-        }
+  const statusMessage = await ctx.reply(`*Searching for ${formattedName}*`, {
+    parse_mode: "Markdown",
+  });
+  try {
+    const searchResults = await wikifeet.search(formattedName);
+
+    if (searchResults.length === 0) {
+      console.log(`No results found for ${formattedName}`);
+      await sendMarkdownMessage(ctx, `*No results found for ${formattedName}*`);
+      return;
+    } else {
+      let query = searchResults[0];
+      let pics = await wikifeet.getImages(query);
+      let randomIndices = Array.from(
+        { length: 3 },
+        () => 0 | (pics.length * Math.random())
       );
 
-      const searchResults = await wikifeet.search(formattedName);
-
-      await bot.api.deleteMessage(ctx.from.id, statusMessage.message_id);
-
-      if (searchResults.length === 0) {
-        console.log(`No results found for ${formattedName}`);
-        await sendMarkdownMessage(
-          ctx,
-          `*No results found for ${formattedName}*`
-        );
-        return;
-      } else {
-        let query = searchResults[0];
-        let pics = await wikifeet.getImages(query);
-        let randomIndices = Array.from(
-          { length: 3 },
-          () => 0 | (pics.length * Math.random())
-        );
-
-        let promises = randomIndices.map((index) =>
-          ctx.replyWithPhoto(pics[index])
-        );
-        await Promise.all(promises);
-        console.log("Pics sent");
-      }
-    } catch (error) {
+      let promises = randomIndices.map((index) =>
+        ctx.replyWithPhoto(pics[index])
+      );
+      await Promise.all(promises);
+      console.log("Pics sent");
+    }
+  } catch (error) {
+    if (error instanceof GrammyError) {
+      console.log(`Error sending message: ${error.message}`);
+      return;
+    } else {
       console.error(error);
       await sendMarkdownMessage(
         ctx,
@@ -143,8 +137,6 @@ bot.on("msg", async (ctx) => {
       parse_mode: "Markdown",
     });
   }
-
-  await searchAndSendImages(ctx, ctx.msg.text);
 });
 
 // Error
