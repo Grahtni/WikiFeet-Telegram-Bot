@@ -128,7 +128,7 @@ bot.on("msg", async (ctx) => {
         ctx,
         `*Error while searching Wikifeet for ${formattedName}*`
       );
-      throw error;
+      return;
     }
   }
 
