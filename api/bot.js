@@ -97,9 +97,19 @@ bot.on("msg", async (ctx) => {
   const statusMessage = await ctx.reply(`*Searching for ${formattedName}*`, {
     parse_mode: "Markdown",
   });
+  function deleteMessageWithDelay(fromId, messageId, delayMs) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        bot.api
+          .deleteMessage(fromId, messageId)
+          .then(() => resolve())
+          .catch((error) => reject(error));
+      }, delayMs);
+    });
+  }
+  deleteMessageWithDelay(ctx.from.id, statusMessage.message_id, 3000);
   try {
     const searchResults = await wikifeet.search(formattedName);
-
     if (searchResults.length === 0) {
       console.log(`No results found for ${formattedName}`);
       await sendMarkdownMessage(ctx, `*No results found for ${formattedName}*`);
