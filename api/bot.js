@@ -126,7 +126,6 @@ bot.on("msg", async (ctx) => {
         ctx.replyWithPhoto(pics[index])
       );
       await Promise.all(promises);
-      console.log("Pics sent");
     }
   } catch (error) {
     if (error instanceof GrammyError) {
