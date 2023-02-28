@@ -132,13 +132,27 @@ bot.on("msg", async (ctx) => {
     }
   } catch (error) {
     if (error instanceof GrammyError) {
+      if (error.message.includes("Forbidden: bot was blocked by the user")) {
+        console.log("Bot was blocked by the user");
+      } else if (error.message.includes("Call to 'sendMediaGroup' failed!")) {
+        console.log("Error sending media.");
+        await ctx.reply(`*Error contacting WikiFeet.*`, {
+          parse_mode: "Markdown",
+          reply_to_message_id: ctx.msg.message_id,
+        });
+      } else {
+        await ctx.reply(`*An error occurred: ${error.message}*`, {
+          parse_mode: "Markdown",
+          reply_to_message_id: ctx.msg.message_id,
+        });
+      }
       console.log(`Error sending message: ${error.message}`);
       return;
     } else {
-      console.error(error);
-      await sendMarkdownMessage(
-        ctx,
-        `*Error while searching Wikifeet for ${formattedName}*`
+      console.log(`An error occured:`, error);
+      await ctx.reply(
+        `*An error occurred. Are you sure you sent a valid celebrity name?*\n_Error: ${error.message}_`,
+        { parse_mode: "Markdown", reply_to_message_id: ctx.msg.message_id }
       );
       return;
     }
