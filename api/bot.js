@@ -117,15 +117,18 @@ bot.on("msg", async (ctx) => {
     } else {
       let query = searchResults[0];
       let pics = await wikifeet.getImages(query);
-      let randomIndices = Array.from(
-        { length: 3 },
-        () => 0 | (pics.length * Math.random())
+      let randomIndices = Array.from({ length: 10 }, () =>
+        Math.floor(Math.random() * pics.length)
       );
 
-      let promises = randomIndices.map((index) =>
-        ctx.replyWithPhoto(pics[index])
-      );
-      await Promise.all(promises);
+      let media = randomIndices.map((index) => ({
+        type: "photo",
+        media: pics[index],
+      }));
+
+      await ctx.replyWithMediaGroup(media, {
+        reply_to_message_id: ctx.msg.message_id,
+      });
     }
   } catch (error) {
     if (error instanceof GrammyError) {
