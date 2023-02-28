@@ -97,7 +97,7 @@ bot.on("msg", async (ctx) => {
   const statusMessage = await ctx.reply(`*Searching for ${formattedName}*`, {
     parse_mode: "Markdown",
   });
-  function deleteMessageWithDelay(fromId, messageId, delayMs) {
+  async function deleteMessageWithDelay(fromId, messageId, delayMs) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         bot.api
@@ -107,7 +107,7 @@ bot.on("msg", async (ctx) => {
       }, delayMs);
     });
   }
-  deleteMessageWithDelay(ctx.from.id, statusMessage.message_id, 3000);
+  await deleteMessageWithDelay(ctx.from.id, statusMessage.message_id, 3000);
   try {
     const searchResults = await wikifeet.search(formattedName);
     if (searchResults.length === 0) {
